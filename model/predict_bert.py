@@ -1,6 +1,5 @@
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 import torch
-import os
 
 MODEL_NAME = "Atharva233/mental-health-model"
 
@@ -17,14 +16,10 @@ def load_model():
         tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 
         model = AutoModelForSequenceClassification.from_pretrained(
-            MODEL_NAME,
-            low_cpu_mem_usage=True,   # 🔥 reduces RAM usage
-            torch_dtype=torch.float32 # safer for CPU
+            MODEL_NAME
         )
 
-        model.to("cpu")  # 🔥 force CPU
         model.eval()
-
         print("Model loaded successfully!")
 
 
@@ -35,8 +30,7 @@ def predict(text):
         text,
         return_tensors="pt",
         truncation=True,
-        padding=True,
-        max_length=128  # 🔥 IMPORTANT: limits memory usage
+        padding=True
     )
 
     with torch.no_grad():
@@ -46,5 +40,5 @@ def predict(text):
     predicted_class_id = torch.argmax(logits, dim=1).item()
 
     return {
-        "prediction": int(predicted_class_id)
+        "prediction": predicted_class_id
     }
