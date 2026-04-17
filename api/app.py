@@ -3,16 +3,15 @@ from pydantic import BaseModel
 import sys
 import os
 
-# 🔥 Ensure correct path (important for Render)
+# 🔥 Fix path for Render
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, ".."))
 sys.path.append(ROOT_DIR)
 
-# Import prediction function
-from model.predict_bert import predict
+# Import prediction + loader
+from model.predict_bert import predict, load_model
 
 
-# 🚀 Initialize FastAPI app
 app = FastAPI(
     title="Mental Health AI API",
     description="Emotion Detection + Mental Health Scoring System",
@@ -20,12 +19,16 @@ app = FastAPI(
 )
 
 
-# 📥 Input schema
+# 🔥 LOAD MODEL AT STARTUP (VERY IMPORTANT)
+@app.on_event("startup")
+def startup_event():
+    load_model()
+
+
 class TextInput(BaseModel):
     text: str
 
 
-# 🏠 Root endpoint
 @app.get("/")
 def home():
     return {
@@ -33,7 +36,6 @@ def home():
     }
 
 
-# ❤️ Health check (VERY IMPORTANT for Render)
 @app.get("/health")
 def health_check():
     return {
@@ -41,17 +43,11 @@ def health_check():
     }
 
 
-# 🔥 MAIN PREDICTION ENDPOINT
 @app.post("/predict")
 def get_prediction(data: TextInput):
     try:
         result = predict(data.text)
-
-        return {
-            "input": data.text,
-            "prediction": result
-        }
-
+        return result
     except Exception as e:
         return {
             "error": str(e)

@@ -14,13 +14,18 @@ def load_model():
         print("🔄 Loading model from HuggingFace...")
 
         tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-        model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME)
 
-        # 🔥 IMPORTANT FIXES
-        model.to("cpu")  # force CPU (Render safe)
+        model = AutoModelForSequenceClassification.from_pretrained(
+            MODEL_NAME,
+            torch_dtype=torch.float32,      # CPU safe
+            low_cpu_mem_usage=True          # 🔥 reduces memory usage
+        )
+
+        model.to("cpu")
         model.eval()
 
-        torch.set_num_threads(1)  # reduce memory usage
+        # Reduce CPU threads (important for Render)
+        torch.set_num_threads(1)
 
         print("✅ Model loaded successfully!")
 
@@ -42,21 +47,12 @@ def predict(text):
         logits = outputs.logits
         predicted_class_id = torch.argmax(logits, dim=1).item()
 
-        # Optional: map labels (edit based on your model)
-        label_map = {
-            0: "Negative",
-            1: "Neutral",
-            2: "Positive"
-        }
-
         return {
-            "text": text,
-            "prediction": label_map.get(predicted_class_id, str(predicted_class_id)),
-            "class_id": predicted_class_id
+            "prediction": predicted_class_id
         }
 
     except Exception as e:
-        print("❌ Prediction Error:", str(e))
+        print("❌ Prediction error:", str(e))
         return {
             "error": str(e)
         }
