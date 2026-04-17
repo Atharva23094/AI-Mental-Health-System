@@ -1,0 +1,19 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+bert_results/
+*.log
+
+# Model files (IMPORTANT)
+model/saved_models/
+*.pt
+*.bin
+*.pth
+*.safetensors
+
+# OS files
+.DS_Store
+Thumbs.db
