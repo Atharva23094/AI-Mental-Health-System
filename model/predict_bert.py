@@ -16,11 +16,11 @@ def load_model():
         tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 
         model = AutoModelForSequenceClassification.from_pretrained(
-            MODEL_NAME
+            MODEL_NAME,
+            torch_dtype=torch.float32  # ✅ force CPU safe
         )
 
         model.eval()
-        print("Model loaded successfully!")
 
 
 def predict(text):
@@ -40,5 +40,5 @@ def predict(text):
     predicted_class_id = torch.argmax(logits, dim=1).item()
 
     return {
-        "prediction": predicted_class_id
+        "prediction": int(predicted_class_id)
     }

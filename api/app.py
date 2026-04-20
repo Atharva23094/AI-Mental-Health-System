@@ -19,11 +19,6 @@ app = FastAPI(
 )
 
 
-# 🔥 LOAD MODEL AT STARTUP (VERY IMPORTANT)
-@app.on_event("startup")
-def startup_event():
-    load_model()
-
 
 class TextInput(BaseModel):
     text: str
