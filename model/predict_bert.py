@@ -38,6 +38,10 @@ def predict(text):
             padding=True
         )
 
+        # ❗ REMOVE token_type_ids (important for DistilBERT)
+        if "token_type_ids" in inputs:
+            del inputs["token_type_ids"]
+
         with torch.no_grad():
             outputs = model(**inputs)
 
