@@ -1,15 +1,15 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from pydantic import BaseModel
 import sys
 import os
+import traceback
 
-# 🔥 Fix path for Render
+# Fix path for Render
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, ".."))
 sys.path.append(ROOT_DIR)
 
-# Import prediction
-from model.predict_bert import predict, load_model
+from model.predict_bert import predict
 
 
 app = FastAPI(
@@ -19,45 +19,35 @@ app = FastAPI(
 )
 
 
-# 📥 Input schema
 class TextInput(BaseModel):
     text: str
 
 
-# 🚀 Load model at startup (optional but helps debug)
-@app.on_event("startup")
-def startup_event():
-    try:
-        print("Starting app and loading model...")
-        load_model()
-        print("Model loaded at startup!")
-    except Exception as e:
-        print("Startup model load failed:", str(e))
-
-
-# 🏠 Root endpoint
 @app.get("/")
 def home():
-    return {
-        "message": "Mental Health AI API is running 🚀"
-    }
+    return {"message": "Mental Health AI API is running 🚀"}
 
 
-# ❤️ Health check
 @app.get("/health")
 def health_check():
-    return {
-        "status": "healthy"
-    }
+    return {"status": "healthy"}
 
 
-# 🔥 MAIN PREDICTION ENDPOINT
 @app.post("/predict")
 def get_prediction(data: TextInput):
-    result = predict(data.text)
+    try:
+        print("Incoming text:", data.text)
 
-    # ❗ If model returned error → raise proper HTTP error
-    if "error" in result:
-        raise HTTPException(status_code=500, detail=result["error"])
+        result = predict(data.text)
 
-    return result
+        print("Prediction result:", result)
+
+        return result
+
+    except Exception as e:
+        print("FULL ERROR:")
+        traceback.print_exc()   # 🔥 THIS IS KEY
+
+        return {
+            "error": str(e)
+        }
