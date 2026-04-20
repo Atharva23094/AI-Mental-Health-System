@@ -12,15 +12,18 @@ def load_model():
     global model, tokenizer
 
     if model is None:
-        print("Loading model from HuggingFace...")
+        print("Loading model...")
 
         tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 
         model = AutoModelForSequenceClassification.from_pretrained(
-            MODEL_NAME
+            MODEL_NAME,
+            torch_dtype=torch.float32  # SAFE for CPU
         )
 
+        model.to("cpu")
         model.eval()
+
         print("Model loaded successfully!")
 
 
@@ -41,12 +44,12 @@ def predict(text):
         logits = outputs.logits
         probs = torch.softmax(logits, dim=1)
 
-        predicted_class_id = torch.argmax(probs, dim=1).item()
-        confidence = probs[0][predicted_class_id].item()
+        pred = torch.argmax(probs, dim=1).item()
+        conf = probs[0][pred].item()
 
         return {
-            "prediction": predicted_class_id,
-            "confidence": round(confidence, 4)
+            "prediction": pred,
+            "confidence": round(conf, 4)
         }
 
     except Exception as e:
