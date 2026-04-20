@@ -5,5 +5,5 @@ transformers==4.41.2
 datasets==2.19.1
 scikit-learn
 pandas
-numpy
+numpy<2.0   # ✅ VERY IMPORTANT FIX
 joblib
